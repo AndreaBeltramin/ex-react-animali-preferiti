@@ -15,25 +15,59 @@
 
 		<script type="text/babel">
 			const { useState } = React;
+			const { createPortal } = ReactDOM;
+
+			function Modal({
+				title,
+				content,
+				show = false,
+				onClose = () => {},
+				onConfirm = () => {},
+			}) {
+				return (
+					show &&
+					createPortal(
+						<div className="modal-container">
+							<div className="modal">
+								<div className="modal-title">
+									<h2>{title}</h2>
+								</div>
+								<div className="modal-content">
+									<p>{content}</p>
+								</div>
+								<div className="modal-footer">
+									<button onClick={onClose} className="close">
+										Annulla
+									</button>
+									<button onClick={onConfirm}>Conferma</button>
+								</div>
+							</div>
+						</div>,
+						document.body
+					)
+				);
+			}
 
 			const Animali = () => {
-				const animalsChoices = [
-					"Cane",
-					"Gatto",
-					"Pappagallo",
-					"Cavallo",
-					"Panda",
-				];
+				const [show, setShow] = useState(false);
+				const [animalName, setAnimalName] = useState("");
+
 				const [animals, setAnimals] = useState([]);
 				const aggiungiAnimale = () => {
-					const randomIndex = Math.floor(Math.random() * animalsChoices.length);
-					const randomAnimal = animalsChoices[randomIndex];
-					setAnimals((animals) => [...animals, randomAnimal]);
+					if (!animalName) {
+						alert("Inserisci un nome di un animale prima di confermare");
+						return;
+					} else {
+						setAnimals((animals) => [...animals, animalName]);
+						setAnimalName("");
+						setShow(false);
+					}
 				};
+
 				return (
 					<>
-						<button onClick={aggiungiAnimale}>Aggiungi animale</button>
-						<details>
+						<button onClick={() => setShow(true)}>Aggiungi animale</button>
+						<details className="details">
 							<summary>Animali</summary>
 							<ul>
 								{animals.map((animale, index) => (
@@ -41,6 +75,19 @@
 								))}
 							</ul>
 						</details>
+						<Modal
+							show={show}
+							onClose={() => setShow(false)}
+							onConfirm={aggiungiAnimale}
+							title="Inserisci un nome di un animale"
+							content={
+								<input
+									type="text"
+									value={animalName}
+									onChange={(e) => setAnimalName(e.target.value)}
+								/>
+							}
+						/>
 					</>
 				);
 			};
